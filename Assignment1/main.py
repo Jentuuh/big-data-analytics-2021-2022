@@ -4,6 +4,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+
 prev_author_dict = {}
 author_dict = {}
 group_size = 1
@@ -76,8 +77,9 @@ if __name__ == "__main__":
 Handler = PaperHandler()
 parser.setContentHandler( Handler )
 
+parser.parse("dblp.xml")
+
 while group_size < 5:
-    parser.parse("dblp.xml")
 
     # for i in sorted(author_dict.values()):
     #     print(author_dict[i])
