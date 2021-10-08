@@ -11,7 +11,7 @@ author_dict = {}
 count_dict = {}
 pairs_hash_table = {}
 
-threshold = 300
+threshold = 5
 BUCKET_COUNT = 1500000
 
 
@@ -80,7 +80,7 @@ class PaperHandler(xml.sax.ContentHandler):
             or tag == "inproceedings" \
             or tag == "phdthesis" \
             or tag == "www":
-                dataset.append(self.authors)
+                dataset.append(frozenset(self.authors))
                 self.authors = []
             elif tag == "author":
                 self.authors.append(self.currentAuthor)
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     parser.setContentHandler( Handler )
 
     starttime = process_time()
-    parser.parse("dblp.xml")
+    parser.parse("dblp50000.xml")
     print("Time to parse dataset : {0} s".format(process_time() - starttime))
 
     # First pass
@@ -158,12 +158,13 @@ if __name__ == "__main__":
         starttime = process_time()
 
         candidates = []
+        pairs_hash_table = {}
         count_dict = {}
 
         # We loop through the dataset ONCE and count the occurences of our list of candidates
         for authorlist in itertools.islice(dataset, len(dataset)):
             for comb in curr_combinations:
-                if comb.issubset(set(authorlist)):
+                if comb.issubset(authorlist):
                     if comb in count_dict.keys():
                         count_dict[comb] += 1
                     else:
