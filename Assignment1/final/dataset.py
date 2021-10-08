@@ -39,7 +39,7 @@ def parse_formatted():
     start = time.process_time()
     print("START:PARSING: {0}s".format(start))
 
-    dataset = dataset_from_file("../../data/formatted.dblp.txt")
+    dataset = dataset_from_file("../../data/dblp.txt")
 
     end = time.process_time()
     print("END:PARSING: {0}s".format(end))
