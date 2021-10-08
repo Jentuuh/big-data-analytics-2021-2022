@@ -1,9 +1,7 @@
 import itertools
 import xml.sax
-import pandas as pd
 from time import process_time
-import seaborn as sns
-import matplotlib.pyplot as plt
+
 
 dataset = []
 prev_author_dict = {}
@@ -102,7 +100,7 @@ if __name__ == "__main__":
     parser.setContentHandler( Handler )
 
     starttime = process_time()
-    parser.parse("dblp.xml")
+    parser.parse("../data/dblp.xml")
     print("Time to parse dataset : {0} s".format(process_time() - starttime))
 
     # First pass
