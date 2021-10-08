@@ -9,7 +9,7 @@ count_dict = {}
 pairs_hash_table = {}
 is_subset_dict = {}
 
-threshold = 100
+threshold = 300
 BUCKET_COUNT = 5000000000
 
 
@@ -60,36 +60,36 @@ def process_dataset(filename):
 
         # During pass 2 we generate the pairs on the go and check if they need to stay,
         # otherwise they won't fit in memory
-        if curr_pass == 2:
-            f = open(filename, "r")
+        # if curr_pass == 2:
+        #     f = open(filename, "r")
+        #
+        #     check_candidates = set(candidates)
+        #     while True:
+        #         line = f.readline()
+        #
+        #         if not line:
+        #             break
+        #         line = line.replace("\n", "")
+        #         line_data = line.split('#')
+        #
+        #         frequents = set(line_data).intersection(check_candidates)
+        #         pairs = list(map(frozenset, itertools.combinations(frequents, 2)))
+        #
+        #         if len(pairs) > 0:
+        #             pairs = list(filter(lambda candidate: generate_hash_v1(candidate) in pairs_hash_table.keys() and
+        #                                                   pairs_hash_table[generate_hash_v1(candidate)] >= threshold,
+        #                                                   pairs))
+        #             curr_combinations.extend(pairs)
+        #     f.close()
+        #
+        # else:
+        curr_combinations = list(map(frozenset, itertools.combinations(candidates, curr_pass)))
+        print("Candidates before PCY optimization: " + str(len(curr_combinations)))
 
-            check_candidates = set(candidates)
-            while True:
-                line = f.readline()
-
-                if not line:
-                    break
-                line = line.replace("\n", "")
-                line_data = line.split('#')
-
-                frequents = set(line_data).intersection(check_candidates)
-                pairs = list(map(frozenset, itertools.combinations(frequents, 2)))
-
-                if len(pairs) > 0:
-                    pairs = list(filter(lambda candidate: generate_hash_v1(candidate) in pairs_hash_table.keys() and
+        # PCY: We reduce the amount of candidate pairs
+        curr_combinations = list(filter(lambda candidate: generate_hash_v1(candidate) in pairs_hash_table.keys() and
                                                           pairs_hash_table[generate_hash_v1(candidate)] >= threshold,
-                                                          pairs))
-                    curr_combinations.extend(pairs)
-            f.close()
-
-        else:
-            curr_combinations = list(map(frozenset, itertools.combinations(candidates, curr_pass)))
-            print("Candidates before PCY optimization: " + str(len(curr_combinations)))
-
-            # PCY: We reduce the amount of candidate pairs
-            curr_combinations = list(filter(lambda candidate: generate_hash_v1(candidate) in pairs_hash_table.keys() and
-                                                              pairs_hash_table[generate_hash_v1(candidate)] >= threshold,
-                                                              curr_combinations))
+                                                          curr_combinations))
 
         print("Candidates after PCY optimization: " + str(len(curr_combinations)))
         print("Time to make combinations : {0} s".format(process_time() - starttime))
@@ -115,19 +115,11 @@ def process_dataset(filename):
                 continue
 
             for comb in curr_combinations:
-                extension = line_data.extend(comb)
-                hash_value = generate_hash_v1(extension)
-                if hash_value in is_subset_dict.keys() and is_subset_dict[hash_value] > 0:
-                    is_subset_dict[hash_value] -= 1
+                if comb.issubset(line_data_set):
                     if comb in count_dict.keys():
                         count_dict[comb] += 1
                     else:
                         count_dict[comb] = 1
-                # if comb.issubset(line_data_set):
-                #     if comb in count_dict.keys():
-                #         count_dict[comb] += 1
-                #     else:
-                #         count_dict[comb] = 1
 
             if len(line_data) < 50:
                 hash_tuples = list(map(frozenset, itertools.combinations(line_data, curr_pass + 1)))
