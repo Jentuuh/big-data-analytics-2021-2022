@@ -61,7 +61,7 @@ def FPGrowthFromFile(file_name, threshold):
     frequent_items = []
     #findMaxOnEachLayer(fp_tree)
     print("Mining tree...")
-    mineTree(header_table, threshold, [set(), INFINITY], frequent_items)
+    mineTree(header_table, threshold, set(), frequent_items)
     # rules = associationRule(frequent_items, )  # Do we need this?
     return frequent_items
 
@@ -82,7 +82,7 @@ def buildTree(dataset, frequency, threshold):
     if len(header_table) == 0:
         return None, None
 
-    # Column in header table: [author: [frequency, parent]]
+    # Column in header table: [author: [frequency, pointer to node]]
     for author in header_table:
         header_table[author] = [header_table[author], None]
 
@@ -113,7 +113,7 @@ def updateTree(author, node, header_table, frequency):
         # Otherwise we create a new leaf for this author and append it to its parent
         new_author_node = Node(author, frequency, node)
         node.children[author] = new_author_node
-        updateHeaderTable(author, new_author_node,header_table)
+        updateHeaderTable(author, new_author_node, header_table)
 
     # We return the leaf of the author we were evaluating, so we can continue from that leaf (all the way down the list)
     return node.children[author]
@@ -141,17 +141,30 @@ def mineTree(header_table, threshold, prefix, frequent_items):
     for author in authors_sorted:
         # Pattern growth achieved by concatenation of suffix pattern with frequent patterns
         # generated from conditional FP tree
-        freq_set = [set(), 0]
-        freq_set[0] = prefix[0].copy()
-        freq_set[1] = min(prefix[1], author[1][0])
-        freq_set[0].add(author[1][0])
+        # freq_set = [set(), 0]
+        # freq_set[0] = prefix[0].copy()
+        # freq_set[1] = min(prefix[1], author[1][0])
+        # freq_set[0].add(author[1][0])
+        #
+        # group_size = len(freq_set[0])
+        #
+        # if max_counts[group_size] < freq_set[1] or not max_counts[group_size]:
+        #     max_counts[group_size] = freq_set[1]
+        #     frequent_items.append(freq_set)
+        #     frequent_items = list(filter(lambda freq_set: freq_set[1] >= max_counts[len(freq_set[0])], list(frequent_items)))
 
-        group_size = len(freq_set[0])
 
-        if max_counts[group_size] < freq_set[1] or not max_counts[group_size]:
-            max_counts[group_size] = freq_set[1]
-            frequent_items.append(freq_set)
-            frequent_items = list(filter(lambda freq_set: freq_set[1] >= max_counts[len(freq_set[0])], list(frequent_items)))
+        freq_item_set = prefix.copy()
+        freq_item_set.add(author[0])
+        freq_itemset_container = [freq_item_set, author[1][0]]
+
+        group_size = len(freq_item_set)
+
+        if max_counts[group_size] < freq_itemset_container[1] or not max_counts[group_size]:
+            max_counts[group_size] = freq_itemset_container[1]
+            frequent_items.append(freq_itemset_container)
+            frequent_items = list(filter(lambda freq_itemset_container: freq_itemset_container[1] >= max_counts[len(freq_itemset_container[0])], frequent_items))
+
 
         # Build the conditional pattern base by finding all prefix paths, then build the conditional FP tree
         conditional_pattern_base, frequency = findAllPrefixes(author[0], header_table)
@@ -159,7 +172,7 @@ def mineTree(header_table, threshold, prefix, frequent_items):
 
         if new_header_table is not None:
             # Mine recursively down on this new header table formed from the FP conditional tree
-            mineTree(new_header_table, threshold, freq_set, frequent_items)
+            mineTree(new_header_table, threshold, freq_item_set, frequent_items)
     #print("Time to mine FP tree : {0} s".format(process_time() - starttime))
 
 
@@ -207,6 +220,7 @@ def recursiveBFS(graph, q, discovered):
             q.append(u)
 
     recursiveBFS(graph, q, discovered)
+
 
 def findMaxOnEachLayer(root: Node):
     LIMIT = 1000
@@ -261,6 +275,6 @@ def findMaxOnEachLayer(root: Node):
             children.append(child)
             inserted += 1
 
-print(FPGrowthFromFile('../data/dblp.txt', 5))
+print(FPGrowthFromFile('../data/dblp.txt', 2))
 print(max_counts)
 # print(freq_items)
