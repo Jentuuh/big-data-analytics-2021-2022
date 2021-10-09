@@ -6,6 +6,8 @@ sys.setrecursionlimit(10**6)
 
 starttime = process_time()
 
+max_counts = defaultdict(int)
+
 
 class Node:
     def __init__(self, author_name, frequency, parent_node):
@@ -17,6 +19,13 @@ class Node:
 
     def increase(self, frequency):
         self.frequency += frequency
+
+    def __str__(self):
+        return "!" + str(self.frequency)
+
+    def __repr__(self):
+        return "!" + str(self.frequency)
+
 
 
 def parseDatasetFromFile(file_name):
@@ -42,18 +51,19 @@ def parseDatasetFromFile(file_name):
 # Reads dataset from file and performs the FP growth algorithm on it
 def FPGrowthFromFile(file_name, threshold):
 
-    print("parsing...")
+    print("Parsing...")
     dataset, frequency = parseDatasetFromFile(file_name)
 
-    print("building tree...")
+    print("Building FP Tree...")
     fp_tree, header_table = buildTree(dataset, frequency, threshold)
 
-    print("finding max...")
+    print("Finding max frequent sets on each layer...")
     frequent_items = []
-    findMaxOnEachLayer(fp_tree)
-    # mineTree(header_table, threshold, set(), frequent_items)
+    #findMaxOnEachLayer(fp_tree)
+    print("Mining tree...")
+    mineTree(header_table, threshold, set(), frequent_items)
     # rules = associationRule(frequent_items, )  # Do we need this?
-    # return frequent_items
+    return frequent_items
 
 
 def buildTree(dataset, frequency, threshold):
@@ -91,7 +101,6 @@ def buildTree(dataset, frequency, threshold):
         for author in authorlist:
             current_node = updateTree(author, current_node, header_table, frequency[i])
 
-    #print("Time to build FP tree : {0} s".format(process_time() - starttime))
     return fp_tree, header_table
 
 
@@ -126,18 +135,30 @@ def updateHeaderTable(author, new_parent_node, header_table):
 
 def mineTree(header_table, threshold, prefix, frequent_items):
     # Sort authors by frequency and list them
-    authors_sorted = [author[0] for author in sorted(list(header_table.items()), key=lambda n:n[1][0])]
+    authors_sorted = [author for author in sorted(list(header_table.items()), key=lambda n:n[1][0])]
 
     # Ascending order
     for author in authors_sorted:
         # Pattern growth achieved by concatenation of suffix pattern with frequent patterns
         # generated from conditional FP tree
+
         freq_set = prefix.copy()
-        freq_set.add(author)
-        frequent_items.append(freq_set)
+        freq_set.add(author[1][0])
+
+        group_size = len(freq_set)
+
+        min_count_author_list = list(freq_set)[0]
+        for author_count in list(freq_set)[1:]:
+            if author_count < min_count_author_list:
+                min_count_author_list = author_count
+        if max_counts[group_size] < min_count_author_list or not max_counts[group_size]:
+            max_counts[group_size] = min_count_author_list
+            frequent_items.append(freq_set)
+            # frequent_items = set(filter(lambda freq_set: freq >= max_counts[group_size], list(frequent_items)))
+        print(frequent_items)
 
         # Build the conditional pattern base by finding all prefix paths, then build the conditional FP tree
-        conditional_pattern_base, frequency = findAllPrefixes(author, header_table)
+        conditional_pattern_base, frequency = findAllPrefixes(author[0], header_table)
         conditional_tree, new_header_table = buildTree(conditional_pattern_base, frequency, threshold)
 
         if new_header_table is not None:
@@ -171,22 +192,6 @@ def ascendFPTree(node, prefix_path):
     if node.parent is not None:
         prefix_path.append(node)
         ascendFPTree(node.parent, prefix_path)
-
-
-# def checkLayerForOccurence(root, stop_layer, author_name):
-#     frequency = 0
-#     curr_layer = 1
-#     if stop_layer == 1:
-#         for key, value in root.children.items():
-#             if value.author_name == author_name:
-#                 frequency += value.frequency
-#
-#     if stop_layer == 2:
-#         for key, value in root.children.items():
-#             for child in value.children.values():
-#                 if value.author_name == author_name:
-#                     frequency += child.frequency
-#     return frequency
 
 
 # Perform BFS recursively on the graph
@@ -260,5 +265,6 @@ def findMaxOnEachLayer(root: Node):
             children.append(child)
             inserted += 1
 
-freq_items = FPGrowthFromFile('../data/dblp.txt', 1)
+print(FPGrowthFromFile('../data/dblp.txt', 200))
+print(max_counts)
 # print(freq_items)

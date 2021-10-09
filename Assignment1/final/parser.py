@@ -4,7 +4,7 @@ DBLP = "../../data/dblp.xml"
 DBLP_SUB = "../../data/dblp50000.xml"
 DBLP_SUBSUB = "../../data/dblp.1000.xml"
 
-OUT_DBLP = "../../data/dblpw.txt"
+OUT_DBLP = "../../data/dblp.txt"
 OUT_DBLP_SUB = "../../data/dblp50000.txt"
 OUT_DBLP_SUBSUB = "../../data/dblp.1000.txt"
 
