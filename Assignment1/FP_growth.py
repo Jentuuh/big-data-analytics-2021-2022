@@ -3,10 +3,10 @@ from collections import OrderedDict, defaultdict, deque
 from time import process_time
 
 sys.setrecursionlimit(10**6)
-
 starttime = process_time()
 
 max_counts = defaultdict(int)
+INFINITY = 2147483647
 
 
 class Node:
@@ -61,7 +61,7 @@ def FPGrowthFromFile(file_name, threshold):
     frequent_items = []
     #findMaxOnEachLayer(fp_tree)
     print("Mining tree...")
-    mineTree(header_table, threshold, set(), frequent_items)
+    mineTree(header_table, threshold, [set(), INFINITY], frequent_items)
     # rules = associationRule(frequent_items, )  # Do we need this?
     return frequent_items
 
@@ -141,21 +141,17 @@ def mineTree(header_table, threshold, prefix, frequent_items):
     for author in authors_sorted:
         # Pattern growth achieved by concatenation of suffix pattern with frequent patterns
         # generated from conditional FP tree
+        freq_set = [set(), 0]
+        freq_set[0] = prefix[0].copy()
+        freq_set[1] = min(prefix[1], author[1][0])
+        freq_set[0].add(author[1][0])
 
-        freq_set = prefix.copy()
-        freq_set.add(author[1][0])
+        group_size = len(freq_set[0])
 
-        group_size = len(freq_set)
-
-        min_count_author_list = list(freq_set)[0]
-        for author_count in list(freq_set)[1:]:
-            if author_count < min_count_author_list:
-                min_count_author_list = author_count
-        if max_counts[group_size] < min_count_author_list or not max_counts[group_size]:
-            max_counts[group_size] = min_count_author_list
+        if max_counts[group_size] < freq_set[1] or not max_counts[group_size]:
+            max_counts[group_size] = freq_set[1]
             frequent_items.append(freq_set)
-            # frequent_items = set(filter(lambda freq_set: freq >= max_counts[group_size], list(frequent_items)))
-        print(frequent_items)
+            frequent_items = list(filter(lambda freq_set: freq_set[1] >= max_counts[len(freq_set[0])], list(frequent_items)))
 
         # Build the conditional pattern base by finding all prefix paths, then build the conditional FP tree
         conditional_pattern_base, frequency = findAllPrefixes(author[0], header_table)
@@ -265,6 +261,6 @@ def findMaxOnEachLayer(root: Node):
             children.append(child)
             inserted += 1
 
-print(FPGrowthFromFile('../data/dblp.txt', 200))
+print(FPGrowthFromFile('../data/dblp.txt', 5))
 print(max_counts)
 # print(freq_items)
