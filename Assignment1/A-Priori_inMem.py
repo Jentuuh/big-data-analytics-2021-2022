@@ -12,7 +12,7 @@ author_dict = {}
 count_dict = {}
 pairs_hash_table = {}
 
-threshold = 7
+threshold = 500
 
 
 class PaperHandler( xml.sax.ContentHandler ):
@@ -44,18 +44,31 @@ class PaperHandler( xml.sax.ContentHandler ):
              self.authors.append(content)
 
 if __name__ == "__main__":
-    print(process_time())
+    # print(process_time())
+    #
+    # # create an XMLReader
+    # parser = xml.sax.make_parser()
+    # # turn off namepsaces
+    # parser.setFeature(xml.sax.handler.feature_namespaces, 0)
+    # # override the default ContextHandler
+    #
+    # Handler = PaperHandler()
+    # parser.setContentHandler( Handler )
+    #
+    # parser.parse("dblp50000.xml")
 
-    # create an XMLReader
-    parser = xml.sax.make_parser()
-    # turn off namepsaces
-    parser.setFeature(xml.sax.handler.feature_namespaces, 0)
-    # override the default ContextHandler
+    f = open("../data/dblp.txt", "r")
 
-    Handler = PaperHandler()
-    parser.setContentHandler( Handler )
+    while True:
+        line = f.readline()
 
-    parser.parse("dblp50000.xml")
+        if not line:
+            break
+        line = line.replace("\n", "")
+        line_data = line.split('#')
+
+        dataset.append(line_data)
+    f.close()
 
     # First pass
     for authorlist in dataset:
@@ -68,18 +81,30 @@ if __name__ == "__main__":
                 count_dict[author] = 1
 
     candidates = []
+    max_freq_sets = []
+    max_count = 0
 
     # Check which items are frequent in the first pass
     for key in count_dict.keys():
         if count_dict[key] >= threshold:
             candidates.append(key)
-    print(candidates)
+        if count_dict[key] > max_count:
+            # Update the max freq count and reset list of max freq sets
+            max_count = count_dict[key]
+            max_freq_sets = []
+            max_freq_sets.append(key)
+        elif count_dict[key] == max_count:
+            # Found a new set of the current max frequency, add it to the list
+            max_freq_sets.append(key)
+
+    print("Max frequency count pass 1: " + str(max_count))
+    print("Max frequent sets pass 1: ", end="")
+    print(max_freq_sets)
 
     curr_pass = 2
     while len(candidates) > 0:
-        print(process_time())
         curr_combinations = list(map(frozenset, itertools.combinations(candidates, curr_pass)))
-        print(len(curr_combinations))
+        print("Combinations pass " + str(curr_pass) + ": " + str(len(curr_combinations)))
 
         candidates = []
         max_freq_sets = []
@@ -100,8 +125,13 @@ if __name__ == "__main__":
         for key in count_dict.keys():
             if count_dict[key] >= threshold:
                 candidates.append(key)
-            if count_dict[key] >= max_count:
+            if count_dict[key] > max_count:
+                # Update the max freq count and reset list of max freq sets
                 max_count = count_dict[key]
+                max_freq_sets = []
+                max_freq_sets.append(key)
+            elif count_dict[key] == max_count:
+                # Found a new set of the current max frequency, add it to the list
                 max_freq_sets.append(key)
 
         print("Max frequency count pass " + str(curr_pass) + ": " + str(max_count))

@@ -203,8 +203,8 @@ if __name__ == "__main__":
 
     starttime = process_time()
 
-    process_dataset('data.txt')
-    print("Time to parse dataset : {0} s".format(process_time() - starttime))
+    process_dataset('../data/dblp.txt')
+    print("Total time to parse and process dataset : {0} s".format(process_time() - starttime))
 
     curr_pass = 1
 
