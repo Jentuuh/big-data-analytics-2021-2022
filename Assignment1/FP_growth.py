@@ -3,7 +3,6 @@ from collections import OrderedDict, defaultdict, deque
 from time import process_time
 
 sys.setrecursionlimit(10**6)
-starttime = process_time()
 
 max_counts = defaultdict(int)
 max_frequency_sets = defaultdict(frozenset)
@@ -27,7 +26,6 @@ class Node:
 
     def __repr__(self):
         return str(self.author_name)
-
 
 
 def parseDatasetFromFile(file_name):
@@ -58,12 +56,13 @@ def FPGrowthFromFile(file_name, threshold):
 
     print("Building FP Tree...")
     fp_tree, header_table = buildTree(dataset, frequency, threshold)
+    dataset = []
 
     print("Finding max frequent sets on each layer...")
 
     frequent_items = []
     print("Mining tree...")
-    mineTree(header_table, threshold, set(), frequent_items)
+    mineTree(header_table, threshold, [set(), INFINITY], frequent_items)
     return frequent_items
 
 
@@ -140,20 +139,20 @@ def mineTree(header_table, threshold, prefix, frequent_items):
 
     # Ascending order
     for author in authors_sorted:
-
         # We concatenate the frequent suffix with new frequent prefixes to generate frequent patterns (tuples)
         # These are generated from the conditional FP tree
-        freq_item_set = prefix.copy()
-        freq_item_set.add(str(author[0]))
-        freq_itemset_container = [freq_item_set, author[1][0]]
+        freq_item_set = [set(), 0]
+        freq_item_set[0] = prefix[0].copy()
+        freq_item_set[0].add(str(author[0]))
+        freq_item_set[1] = min(prefix[1], author[1][0])
 
-        group_size = len(freq_item_set)
+        group_size = len(freq_item_set[0])
 
-        if max_counts[group_size] < freq_itemset_container[1] or not max_counts[group_size]:
-            max_counts[group_size] = freq_itemset_container[1]
-            max_frequency_sets[group_size] = frozenset(freq_itemset_container[0])
-            frequent_items.append(freq_itemset_container)
-            frequent_items = list(filter(lambda freq_itemset_container: freq_itemset_container[1] >= max_counts[len(freq_itemset_container[0])], frequent_items))
+        if max_counts[group_size] < freq_item_set[1] or not max_counts[group_size]:
+            max_counts[group_size] = freq_item_set[1]
+            max_frequency_sets[group_size] = frozenset(freq_item_set[0])
+            frequent_items.append(freq_item_set)
+            frequent_items = list(filter(lambda freq_item_set: freq_item_set[1] >= max_counts[len(freq_item_set[0])], frequent_items))
 
         # Build the conditional pattern base by finding all prefix paths, then build the conditional FP tree
         conditional_pattern_base, frequency = findAllPrefixes(author[0], header_table)
@@ -210,87 +209,69 @@ def ascendFPTree(node, prefix_path):
         prefix_path.append(node)
         ascendFPTree(node.parent, prefix_path)
 
+# Our first solution (which we found out was incorrect)
+# def findMaxOnEachLayer(root: Node):
+#     LIMIT = 1000
+#     current_layer: int = 0
+#
+#     children: deque[Node] = deque()
+#     children.append(root)
+#     first_child_of_next_layer: Node = list(root.children.values())[0]
+#
+#     items_on_layer = 0
+#     inserted = 0
+#     max_curr_layer: int = 0
+#     max_freq_sets: list[str] = []
+#
+#     while children and current_layer < LIMIT:
+#         node_to_process = children.popleft()
+#
+#         if node_to_process is first_child_of_next_layer:
+#             print(current_layer, items_on_layer, inserted)
+#
+#             if current_layer != 0:
+#                 prefix: list[Node] = []
+#                 ascendFPTree(max_freq_sets[0], prefix)
+#
+#                 group = []
+#                 for a in prefix:
+#                     group.append(a.author_name)
+#
+#                 print("> {0} {1}".format(max_curr_layer, group))
+#
+#             inserted = 0
+#             items_on_layer = 0
+#             current_layer += 1
+#
+#             max_curr_layer = 0
+#             max_freq_sets = []
+#
+#         items_on_layer += 1
+#
+#         if node_to_process.frequency > max_curr_layer:
+#             max_curr_layer = node_to_process.frequency
+#             max_freq_sets = []
+#
+#         if node_to_process.frequency == max_curr_layer:
+#             max_freq_sets.append(node_to_process)
+#
+#         for child in node_to_process.children.values():
+#             if inserted == 0:
+#                 first_child_of_next_layer = list(node_to_process.children.values())[0]
+#
+#             children.append(child)
+#             inserted += 1
 
-# Perform BFS recursively on the graph
-def recursiveBFS(graph, q, discovered):
-    if not q:
-        return
+starttime = process_time()
 
-    # dequeue front node and print it
-    v = q.popleft()
-    print(v, end=' ')
-
-    # do for every edge `v —> u`
-    for u in graph.adjList[v]:
-        if not discovered[u]:
-            # mark it as discovered and enqueue it
-            discovered[u] = True
-            q.append(u)
-
-    recursiveBFS(graph, q, discovered)
-
-
-def findMaxOnEachLayer(root: Node):
-    LIMIT = 1000
-    current_layer: int = 0
-
-    children: deque[Node] = deque()
-    children.append(root)
-    first_child_of_next_layer: Node = list(root.children.values())[0]
-
-    items_on_layer = 0
-    inserted = 0
-    max_curr_layer: int = 0
-    max_freq_sets: list[str] = []
-
-    while children and current_layer < LIMIT:
-        node_to_process = children.popleft()
-
-        if node_to_process is first_child_of_next_layer:
-            print(current_layer, items_on_layer, inserted)
-
-            if current_layer != 0:
-                prefix: list[Node] = []
-                ascendFPTree(max_freq_sets[0], prefix)
-
-                group = []
-                for a in prefix:
-                    group.append(a.author_name)
-
-                print("> {0} {1}".format(max_curr_layer, group))
-            
-            inserted = 0
-            items_on_layer = 0
-            current_layer += 1
-
-            max_curr_layer = 0
-            max_freq_sets = []
-
-        items_on_layer += 1
-
-        if node_to_process.frequency > max_curr_layer:
-            max_curr_layer = node_to_process.frequency
-            max_freq_sets = []
-        
-        if node_to_process.frequency == max_curr_layer:
-            max_freq_sets.append(node_to_process)
-
-        for child in node_to_process.children.values():
-            if inserted == 0:
-                first_child_of_next_layer = list(node_to_process.children.values())[0]
-
-            children.append(child)
-            inserted += 1
-
-
-print(FPGrowthFromFile('../data/dblp.txt', 3))
-print("Max frequency counts per k: ", end="")
-print(max_counts)
+FPGrowthFromFile('../data/dblp.txt', 3)
 print("Max frequent sets per k: ", end="")
 print(max_frequency_sets)
 
 verifyCounts('../data/dblp.txt')
 print("Verified max frequency counts per k: ", end="")
 print({k: v for k, v in sorted(max_counts_verified.items(), key=lambda item: item[0])})
+
+print("Total time : {0} s".format(process_time() - starttime))
 
 

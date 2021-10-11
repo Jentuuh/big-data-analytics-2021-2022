@@ -1,5 +1,9 @@
 import xml.sax
 
+# Converts the dataset to a custom format in order to speed up the parsing process during mining the dataset.
+# Running this script with file ../../data/dblp.xml will result in a .txt-file ../../data/dblp.txt . This file
+# has our custom format and can be used to run the FP-growth script.
+
 DBLP = "../../data/dblp.xml"
 DBLP_SUB = "../../data/dblp50000.xml"
 DBLP_SUBSUB = "../../data/dblp.1000.xml"
@@ -66,5 +70,8 @@ class ContentHandler(xml.sax.ContentHandler):
 
 
 # Main
+print("Parsing dataset...")
 dataset = parse()
 dataset_to_file(dataset)
+print("Finished.")
+
