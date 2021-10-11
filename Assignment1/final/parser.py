@@ -4,6 +4,8 @@ import xml.sax
 # Running this script with file ../../data/dblp.xml will result in a .txt-file ../../data/dblp.txt . This file
 # has our custom format and can be used to run the FP-growth script.
 
+# Jente Vandersanden and Ingo Andelhofs, Big Data Analytics 2021 - 2022, Hasselt University.
+
 DBLP = "../../data/dblp.xml"
 DBLP_SUB = "../../data/dblp50000.xml"
 DBLP_SUBSUB = "../../data/dblp.1000.xml"

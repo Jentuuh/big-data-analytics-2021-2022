@@ -2,12 +2,21 @@ import sys
 from collections import OrderedDict, defaultdict, deque
 from time import process_time
 
+# Our script for the FP-growth approach.
+# Before running this file, you should preprocess the dataset by running the 'parser.py' script. This will transform
+# the XML data into our own custom format to speed up the parsing process. For us, the input file for this script is
+# located at '../data/dblp.txt', but you can change this to your own preference right below this comment.
+
+# Jente Vandersanden and Ingo Andelhofs, Big Data Analytics 2021 - 2022, Hasselt University.
+
+INPUT_FILE_PATH = '../data/dblp.txt'
 sys.setrecursionlimit(10**6)
+INFINITY = 2147483647
 
 max_counts = defaultdict(int)
 max_frequency_sets = defaultdict(frozenset)
 max_counts_verified = defaultdict(int)
-INFINITY = 2147483647
+
 
 
 class Node:
@@ -210,6 +219,7 @@ def ascendFPTree(node, prefix_path):
         ascendFPTree(node.parent, prefix_path)
 
 # Our first solution (which we found out was incorrect)
+
 # def findMaxOnEachLayer(root: Node):
 #     LIMIT = 1000
 #     current_layer: int = 0
@@ -262,9 +272,10 @@ def ascendFPTree(node, prefix_path):
 #             children.append(child)
 #             inserted += 1
 
+
 starttime = process_time()
 
-FPGrowthFromFile('../data/dblp.txt', 3)
+FPGrowthFromFile(INPUT_FILE_PATH, 3)
 print("Max frequent sets per k: ", end="")
 print(max_frequency_sets)
 
