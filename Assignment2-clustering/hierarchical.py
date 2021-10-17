@@ -1,8 +1,5 @@
-import math
-
 import numpy as np
 from Levenshtein import distance
-from sklearn.cluster import AffinityPropagation
 
 
 INPUT_FILE_PATH = '../data/dblp50000_clustering.txt'
