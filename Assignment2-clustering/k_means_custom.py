@@ -7,13 +7,13 @@ from os import mkdir, path
 
 INPUT_FILE_PATH = '../data/dblp_clustering.txt'
 OUTPUT_FOLDER_PATH = '../data/output/'
-FOLDER_PATH = OUTPUT_FOLDER_PATH + INPUT_FILE_PATH + "/"
+FOLDER_NAME = str(datetime.now())
+FOLDER_PATH = OUTPUT_FOLDER_PATH + FOLDER_NAME + "/"
 
 INFINITY = 2**31
 NUM_CLUSTERS = 60
 REPETITIONS = 1
 SEED = 459392
-FOLDER_NAME = str(datetime.now())
 
 
 def parseDatasetFromFile(file_name: str, periodStart: int, periodEnd: int):
@@ -97,6 +97,7 @@ def update_clustroids(points: 'list[str]', clusters: 'list[int]'):
 def print_kmeans_results(
     num_clusters: int, 
     clusters: 'list[int]', 
+    clustroids: 'list[str]',
     points: 'list[str]', 
     time_per_repetition: 'list[float]',
     steps_per_repetition: 'list[int]', 
@@ -114,13 +115,15 @@ def print_kmeans_results(
           "Finished K-means clustering for " + str(num_clusters) + " clusters.\n"
           "============ PERIOD: " + str(start_yr) + "-" + str(end_yr) + " =============\n"
           "============================================\n")
+    cluster_i = 0
     for i, t in enumerate(time_per_repetition):
         print("============== Repetition " + str(i) + " ================")
         print("Steps: " + str(steps_per_repetition[i]))
         print("Total time: " + str(t) + "s")
         print()
         for key, value in sorted(cluster_dict.items()):
-            print("Cluster " + str(key) + ": " + str(value))
+            print("Cluster " + str(key) + ": Clustroid: " + str(clustroids[cluster_i]) + str(value) + "\n")
+            cluster_i += 1
     print()
     return
 
@@ -129,6 +132,7 @@ def write_kmeans_results_to_file(
     file_name: str, 
     num_clusters: int, 
     clusters: 'list[int]', 
+    clustroids: 'list[str]',
     points: 'list[str]', 
     time_per_repetition: 'list[float]',
     steps_per_repetition: 'list[int]', 
@@ -148,13 +152,15 @@ def write_kmeans_results_to_file(
           "Finished K-means clustering for " + str(num_clusters) + " clusters.\n"
           "============ PERIOD: " + str(start_yr) + "-" + str(end_yr) + " =============\n"
           "============================================\n")
+    cluster_i = 0
     for i, t in enumerate(time_per_repetition):
         f.write("============== Repetition " + str(i) + " ================\n")
         f.write("Steps: " + str(steps_per_repetition[i]) + "\n")
         f.write("Total time: " + str(t) + "s\n")
         f.write("\n")
         for key, value in sorted(cluster_dict.items()):
-            f.write("Cluster " + str(key) + ": " + str(value) + "\n")
+            f.write("Cluster " + str(key) + ": Clustroid: " + str(clustroids[cluster_i]) + str(value) + "\n")
+            cluster_i += 1
     f.write("\n")
     return
 
@@ -217,6 +223,7 @@ def kmeans(num_clusters: int, repetitions: int, points: 'list[str]', start_year:
     print_kmeans_results(
         num_clusters, 
         clusters, 
+        clustroids,
         points, 
         time_per_repetition, 
         steps_per_repetition, 
@@ -227,6 +234,7 @@ def kmeans(num_clusters: int, repetitions: int, points: 'list[str]', start_year:
         FOLDER_PATH + str(start_period) + '-' + str(end_period) + ".txt", 
         num_clusters, 
         clusters, 
+        clustroids,
         points, 
         time_per_repetition,
         steps_per_repetition, 
@@ -247,8 +255,8 @@ def main():
     # Parse the dataset
     print("Parsing...")
     titles, min_yr, max_yr = parseDatasetFromFile(INPUT_FILE_PATH, 0, INFINITY)
-    print("Minimal year:" + min_yr)
-    print("Maximal year:" + max_yr)
+    print("Minimal year: {0}".format(min_yr))
+    print("Maximal year: {0}".format(max_yr))
     print("Parsing done.")
 
     # Perform k-means
@@ -260,7 +268,7 @@ def main():
 
         titles, min_yr, max_yr = parseDatasetFromFile(INPUT_FILE_PATH, start, end)
         print("Performing K-Means using Levenshtein distance...")
-        print("Entries: " + str(len(titles)))
+        print("Entries: {0}".format(len(titles)))
         kmeans(NUM_CLUSTERS, REPETITIONS, titles, start_year)
         start_year += 10
 
