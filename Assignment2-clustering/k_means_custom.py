@@ -91,7 +91,7 @@ def update_clustroids(points: list[str], clusters: list[int]):
     return new_clustroids
 
 
-def print_kmeans_results(num_clusters: int, clusters: list[int], points: list[str], time_per_repetition: list[float],
+def print_kmeans_results(num_clusters: int, clusters: list[int], clustroids: list[str], points: list[str], time_per_repetition: list[float],
                          steps_per_repetition: list[int], start_yr: int, end_yr: int):
     cluster_dict = {}
     for index, c in enumerate(clusters):
@@ -104,18 +104,20 @@ def print_kmeans_results(num_clusters: int, clusters: list[int], points: list[st
           "Finished K-means clustering for " + str(num_clusters) + " clusters.\n"
           "============ PERIOD: " + str(start_yr) + "-" + str(end_yr) + " =============\n"
           "============================================\n")
+    cluster_i = 0
     for i, t in enumerate(time_per_repetition):
         print("============== Repetition " + str(i) + " ================")
         print("Steps: " + str(steps_per_repetition[i]))
         print("Total time: " + str(t) + "s")
         print()
         for key, value in sorted(cluster_dict.items()):
-            print("Cluster " + str(key) + ": " + str(value))
+            print("Cluster " + str(key) + ": Clustroid: " + str(clustroids[cluster_i]) + str(value) + "\n")
+            cluster_i += 1
     print()
     return
 
 
-def write_kmeans_results_to_file(file_name: str, num_clusters: int, clusters: list[int], points: list[str], time_per_repetition: list[float],
+def write_kmeans_results_to_file(file_name: str, num_clusters: int, clusters: list[int], clustroids: list[str], points: list[str], time_per_repetition: list[float],
                                  steps_per_repetition: list[int], start_yr: int, end_yr: int):
 
     f = open(file_name, "w")
@@ -131,13 +133,15 @@ def write_kmeans_results_to_file(file_name: str, num_clusters: int, clusters: li
           "Finished K-means clustering for " + str(num_clusters) + " clusters.\n"
           "============ PERIOD: " + str(start_yr) + "-" + str(end_yr) + " =============\n"
           "============================================\n")
+    cluster_i = 0
     for i, t in enumerate(time_per_repetition):
         f.write("============== Repetition " + str(i) + " ================\n")
         f.write("Steps: " + str(steps_per_repetition[i]) + "\n")
         f.write("Total time: " + str(t) + "s\n")
         f.write("\n")
         for key, value in sorted(cluster_dict.items()):
-            f.write("Cluster " + str(key) + ": " + str(value) + "\n")
+            f.write("Cluster " + str(key) + ": Clustroid: " + str(clustroids[cluster_i]) + str(value) + "\n")
+            cluster_i += 1
     f.write("\n")
     return
 
@@ -193,11 +197,11 @@ def kmeans(num_clusters: int, repetitions: int, points: list[str], start_year: i
         steps_per_repetition.append(num_steps)
 
     # Output to CLI and file
-    print_kmeans_results(num_clusters, clusters, points, time_per_repetition, steps_per_repetition, start_year - 1,
-                         start_year + 11)
+    print_kmeans_results(num_clusters, clusters, clustroids, points, time_per_repetition, steps_per_repetition,
+                         start_year - 1, start_year + 11)
     write_kmeans_results_to_file("../data/output/" + FOLDER_NAME + "/" + str(start_year - 1) + '-' +
-                                 str(start_year + 11) + ".txt", num_clusters, clusters, points, time_per_repetition,
-                                 steps_per_repetition, start_year - 1, start_year + 11)
+                                 str(start_year + 11) + ".txt", num_clusters, clusters, clustroids, points,
+                                 time_per_repetition, steps_per_repetition, start_year - 1, start_year + 11)
     return
 
 
