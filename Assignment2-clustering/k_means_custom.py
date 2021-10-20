@@ -5,6 +5,16 @@ from time import process_time
 from datetime import datetime
 from os import mkdir, path
 
+# Our implementation of K-means with clustroids.
+# Before running this file, you should preprocess the dataset by running the 'parser.py' script. This will transform
+# the XML data into our own custom format to speed up the parsing process. For us, the input file for this script is
+# located at '../data/dblp_clustering.txt', but you can change this to your own preference right below this comment.
+
+# We used Python version 3.9.7 to make this assignment. Note that we had problems installing the Levenshtein package
+# on version 3.10.0 .
+
+# Jente Vandersanden and Ingo Andelhofs, Big Data Analytics 2021 - 2022, Hasselt University.
+
 INPUT_FILE_PATH = '../data/dblp_clustering.txt'
 OUTPUT_FOLDER_PATH = '../data/output/'
 FOLDER_NAME = str(datetime.now())
