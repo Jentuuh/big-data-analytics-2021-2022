@@ -16,15 +16,17 @@ OUT_DBLP_SUBSUB = "../../data/dblp.1000_clustering.txt"
 
 
 def dataset_to_file(dataset) -> None:
-    f = open(OUT_DBLP_SUB, "w")
+    f = open(OUT_DBLP, "w")
 
     for entry in dataset:
-        formatted = "#".join(entry)
+        # Filter out the entries with a missing year
+        if len(entry) == 2 and entry[1] != '':
+            formatted = "#".join(entry)
 
-        if formatted == "":
-            continue
+            if formatted == "":
+                continue
 
-        f.write(formatted + "\n")
+            f.write(formatted + "\n")
 
     f.close()
 
@@ -36,7 +38,7 @@ def parse() -> list:
 
     handler = ContentHandler()
     parser.setContentHandler(handler)
-    parser.parse(DBLP_SUB)
+    parser.parse(DBLP)
 
     return handler.dataset
 
@@ -62,10 +64,11 @@ class ContentHandler(xml.sax.ContentHandler):
     def endElement(self, tag):
         self.depth -= 1
 
-        if '/siggraph' in self.chars or '/cgi' in self.chars or '/cgf' in self.chars or '/cg' in self.chars:
+        # if '/siggraph' in self.chars or '/cgi' in self.chars or '/cgf' in self.chars or '/cg' in self.chars:
+        if '/SIGMOD' in self.chars or '/sigmod' in self.chars or '/vldb' in self.chars or '/edbt' in self.chars or '/icde' in self.chars:
             self.isGraphicsPublication = True
 
-        # An author tag ended
+        # A tag of interest ended
         if tag == 'title':
             self.currentTitle = self.chars
         if tag == 'year':
