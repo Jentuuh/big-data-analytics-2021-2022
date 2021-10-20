@@ -1,15 +1,16 @@
-import os
-
 import numpy as np
 import random
 from Levenshtein import distance
 from time import process_time
 from datetime import datetime
-from os import mkdir
+from os import mkdir, path
 
 INPUT_FILE_PATH = '../data/dblp_clustering.txt'
+OUTPUT_FOLDER_PATH = '../data/output/'
+FOLDER_PATH = OUTPUT_FOLDER_PATH + INPUT_FILE_PATH + "/"
+
 INFINITY = 2**31
-NUM_CLUSTERS = 100
+NUM_CLUSTERS = 60
 REPETITIONS = 1
 SEED = 459392
 FOLDER_NAME = str(datetime.now())
@@ -17,7 +18,7 @@ FOLDER_NAME = str(datetime.now())
 
 def parseDatasetFromFile(file_name: str, periodStart: int, periodEnd: int):
     titles = []
-    min_year = 9999
+    min_year = INFINITY
     max_year = 0
 
     f = open(file_name, "r")
@@ -30,21 +31,23 @@ def parseDatasetFromFile(file_name: str, periodStart: int, periodEnd: int):
         line = line.replace("\n", "")
         line_data = line.rsplit('#', 1)
 
+        title = line_data[0]
+        period = int(line_data[1])
 
         # Only parse the data from the assigned period
-        if periodStart <= int(line_data[1]) <= periodEnd:
-            titles.append(line_data[0])
+        if periodStart <= period <= periodEnd:
+            titles.append(title)
 
-            if int(line_data[1]) < int(min_year):
-                min_year = line_data[1]
-            if int(line_data[1]) > int(max_year):
-                max_year = line_data[1]
+            if period < min_year:
+                min_year = period
+            if period > max_year:
+                max_year = period
     f.close()
 
     return titles, min_year, max_year
 
 
-def calculate_closest_distance(title: str, clustroids: list[str]):
+def calculate_closest_distance(title: str, clustroids: 'list[str]'):
     # Calculate the levenshtein distance between each 'point' (title) and the clustroids
     lev_distance = np.array([distance(title, t2)for t2 in clustroids])
 
@@ -56,7 +59,7 @@ def calculate_closest_distance(title: str, clustroids: list[str]):
     return min_distance_pair
 
 
-def update_clustroids(points: list[str], clusters: list[int]):
+def update_clustroids(points: 'list[str]', clusters: 'list[int]'):
 
     new_clustroids = []
     cluster_points_list = []
@@ -91,8 +94,15 @@ def update_clustroids(points: list[str], clusters: list[int]):
     return new_clustroids
 
 
-def print_kmeans_results(num_clusters: int, clusters: list[int], points: list[str], time_per_repetition: list[float],
-                         steps_per_repetition: list[int], start_yr: int, end_yr: int):
+def print_kmeans_results(
+    num_clusters: int, 
+    clusters: 'list[int]', 
+    points: 'list[str]', 
+    time_per_repetition: 'list[float]',
+    steps_per_repetition: 'list[int]', 
+    start_yr: int, 
+    end_yr: int):
+
     cluster_dict = {}
     for index, c in enumerate(clusters):
         if c not in cluster_dict.keys():
@@ -115,8 +125,15 @@ def print_kmeans_results(num_clusters: int, clusters: list[int], points: list[st
     return
 
 
-def write_kmeans_results_to_file(file_name: str, num_clusters: int, clusters: list[int], points: list[str], time_per_repetition: list[float],
-                                 steps_per_repetition: list[int], start_yr: int, end_yr: int):
+def write_kmeans_results_to_file(
+    file_name: str, 
+    num_clusters: int, 
+    clusters: 'list[int]', 
+    points: 'list[str]', 
+    time_per_repetition: 'list[float]',
+    steps_per_repetition: 'list[int]', 
+    start_yr: int, 
+    end_yr: int):
 
     f = open(file_name, "w")
 
@@ -142,7 +159,7 @@ def write_kmeans_results_to_file(file_name: str, num_clusters: int, clusters: li
     return
 
 
-def kmeans(num_clusters: int, repetitions: int, points: list[str], start_year: int):
+def kmeans(num_clusters: int, repetitions: int, points: 'list[str]', start_year: int):
 
     # Pseudo-random
     random.seed(SEED)
@@ -193,25 +210,55 @@ def kmeans(num_clusters: int, repetitions: int, points: list[str], start_year: i
         steps_per_repetition.append(num_steps)
 
     # Output to CLI and file
-    print_kmeans_results(num_clusters, clusters, points, time_per_repetition, steps_per_repetition, start_year - 1,
-                         start_year + 11)
-    write_kmeans_results_to_file("../data/output/" + FOLDER_NAME + "/" + str(start_year - 1) + '-' +
-                                 str(start_year + 11) + ".txt", num_clusters, clusters, points, time_per_repetition,
-                                 steps_per_repetition, start_year - 1, start_year + 11)
+    offset = 1
+    start_period = start_year - offset
+    end_period = start_year + 10 + offset
+
+    print_kmeans_results(
+        num_clusters, 
+        clusters, 
+        points, 
+        time_per_repetition, 
+        steps_per_repetition, 
+        start_period,
+        end_period)
+
+    write_kmeans_results_to_file(
+        FOLDER_PATH + str(start_period) + '-' + str(end_period) + ".txt", 
+        num_clusters, 
+        clusters, 
+        points, 
+        time_per_repetition,
+        steps_per_repetition, 
+        start_period, 
+        end_period)
     return
 
 
 def main():
-    mkdir("../data/output/" + FOLDER_NAME + "/")
+    # Create a output directory for our data
+    output_folder_exists = path.exists(OUTPUT_FOLDER_PATH)
+
+    if not output_folder_exists:
+        mkdir(OUTPUT_FOLDER_PATH)
+
+    mkdir(FOLDER_PATH)
+
+    # Parse the dataset
     print("Parsing...")
-    titles, min_yr, max_yr = parseDatasetFromFile(INPUT_FILE_PATH, 0, 9999)
+    titles, min_yr, max_yr = parseDatasetFromFile(INPUT_FILE_PATH, 0, INFINITY)
     print("Minimal year:" + min_yr)
     print("Maximal year:" + max_yr)
     print("Parsing done.")
 
-    start_year = int(min_yr)
-    while start_year <= int(max_yr):
-        titles, min_yr, max_yr = parseDatasetFromFile(INPUT_FILE_PATH, start_year - 1, start_year + 11)
+    # Perform k-means
+    start_year = min_yr
+    while start_year <= max_yr:
+        offset = 1
+        start = start_year - offset
+        end = start_year + 10 + offset
+
+        titles, min_yr, max_yr = parseDatasetFromFile(INPUT_FILE_PATH, start, end)
         print("Performing K-Means using Levenshtein distance...")
         print("Entries: " + str(len(titles)))
         kmeans(NUM_CLUSTERS, REPETITIONS, titles, start_year)
