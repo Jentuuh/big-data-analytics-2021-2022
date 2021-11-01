@@ -38,7 +38,7 @@ def visualize(wordcountsdict: dict, start_yr: int):
                    random_state=1).generate_from_frequencies(wordcountsdict)
     wc = wc.recolor(color_func=cluster_color_func, random_state=3)
     default_colors = wc.to_array()
-    plt.title("Result clustering periode: " + str(start_yr) + "-" + str(start_yr + 10))
+    plt.title("Result clustering period: " + str(start_yr) + "-" + str(start_yr + 10))
     plt.imshow(default_colors, interpolation="bilinear")
     plt.axis("off")
     plt.savefig(OUTPUT_FIGURE_DIRECTORY + str(start_yr) + "-" + str(start_yr + 10) + ".png")
