@@ -1,15 +1,16 @@
 from collections import defaultdict
 from wordcloud import WordCloud, STOPWORDS
 import matplotlib.pyplot as plt
-import random
 
 # A helper script to visualize the clustering results into a word cloud (per time period).
 # Make sure the clustering has already been done (by executing k_means_custom.py) before running this script. Also
-# beware of the directory structure used in this file to read in the clustering results.
+# beware of the directory structure used in this file to read in the clustering results and write away the resulting
+# figures.
 
 # Jente Vandersanden and Ingo Andelhofs, Big Data Analytics 2021 - 2022, Hasselt University.
 
 DIRECTORYPATH = "../data/output/2021-11-01 14:20:09.454679/"
+OUTPUT_FIGURE_DIRECTORY = "../data/output/clustering_word_clouds/"
 
 filter_list = ['a', 'for', 'and', 'of', 'the', 'with', 'in', 'to', '-', 'an', 'on', 'by', 'abstract', 'bibliography',
                'title', 'data', 'base', 'bases', 'paper', 'sigmod', 'acm', 'sigfidet', 'codasyl', 'at', 'using',
@@ -20,7 +21,7 @@ numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 
 def cluster_color_func(word, font_size, position, orientation, random_state=None, **kwargs):
-    color = int(word.split(" ")[1]) * 360/50
+    color = int(word.split(" ")[1]) * 360/80
     return "hsl({color}, 100%, 50%)".format(color=color)
 
 
@@ -40,8 +41,8 @@ def visualize(wordcountsdict: dict, start_yr: int):
     plt.title("Result clustering periode: " + str(start_yr) + "-" + str(start_yr + 10))
     plt.imshow(default_colors, interpolation="bilinear")
     plt.axis("off")
-    plt.savefig("../data/output/clustering_word_clouds/" + str(start_yr) + "-" + str(start_yr + 10) + ".png")
-    
+    plt.savefig(OUTPUT_FIGURE_DIRECTORY + str(start_yr) + "-" + str(start_yr + 10) + ".png")
+
 
 def count_most_frequent_words_in_cluster(cluster_entries: list[str], cluster_number: int):
     wordcounts = defaultdict()

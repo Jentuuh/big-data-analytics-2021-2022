@@ -1,4 +1,3 @@
-import matplotlib.pyplot
 import numpy as np
 import random
 from Levenshtein import distance
