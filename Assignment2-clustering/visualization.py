@@ -41,8 +41,7 @@ def visualize(wordcountsdict: dict, start_yr: int):
     plt.imshow(default_colors, interpolation="bilinear")
     plt.axis("off")
     plt.savefig("../data/output/clustering_word_clouds/" + str(start_yr) + "-" + str(start_yr + 10) + ".png")
-
-
+    
 
 def count_most_frequent_words_in_cluster(cluster_entries: list[str], cluster_number: int):
     wordcounts = defaultdict()
