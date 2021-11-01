@@ -29,11 +29,8 @@ def find_similar_topics(topic_list):
     topics = np.asarray(topic_list) # So that indexing with a list will work
     lev_similarity = -1*np.array([[distance(w1, w2) for w1 in topics] for w2 in topics])
 
-    print(lev_similarity)
-
-    affprop = AffinityPropagation(affinity="precomputed", damping=0.9999999999999, random_state=None)
+    affprop = AffinityPropagation(affinity="precomputed", damping=0.5, random_state=None)
     affprop.fit(lev_similarity)
-    print(len(np.unique(affprop.labels_)))
     for cluster_id in np.unique(affprop.labels_):
         cluster_topic = topics[affprop.cluster_centers_indices_[cluster_id]]
         cluster = np.unique(topics[np.nonzero(affprop.labels_ == cluster_id)])
@@ -47,4 +44,4 @@ titles, years = parseDatasetFromFile(INPUT_FILE_PATH)
 names = ["Chris", "Kristof", "Bart", "Bas", "Brecht", "Bram", "Brent", "Inguru", "Kristel", "Kris"]
 
 print("Parsing done.")
-find_similar_topics(titles)
+find_similar_topics(names)
