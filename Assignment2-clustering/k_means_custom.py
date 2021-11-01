@@ -12,6 +12,9 @@ from matplotlib import pyplot
 # the XML data into our own custom format to speed up the parsing process. For us, the input file for this script is
 # located at '../data/dblp_clustering.txt', but you can change this to your own preference right below this comment.
 
+# The outputs of the clustering for each batch will be written to the CLI as well as a file located in the
+# '../data/output/<timestamp>/<time_period>.txt'
+
 # We used Python version 3.9.7 to make this assignment. Note that we had problems installing the Levenshtein package
 # on version 3.10.0 .
 
@@ -95,8 +98,6 @@ def update_clustroids(points: 'list[str]', clusters: 'list[int]', num_clusters: 
             continue
 
         for index, row in enumerate(lev_distance):
-            # Filter 0's (we don't care about the distance to a point itself)
-            # masked_row = np.ma.masked_array(row, mask=row == 0)
             max_index = np.argmax(row)
             if row[max_index] < min_max_distance:
                 new_clustroid_index = index
@@ -183,8 +184,6 @@ def kmeans(num_clusters: int, repetitions: int, points: 'list[str]', start_year:
     # Pseudo-random
     random.seed(SEED)
     # Store the best results (in case we do multiple repetitions
-    best_dist_sum = INFINITY
-    best_clusters = []
     steps_per_repetition = []
     time_per_repetition = []
 
@@ -220,10 +219,6 @@ def kmeans(num_clusters: int, repetitions: int, points: 'list[str]', start_year:
 
             if changed:
                 clustroids = update_clustroids(points, clusters, num_clusters)
-            # Keep track of best clustering
-            if distance_sum < best_dist_sum:
-                best_clusters = clusters
-                best_dist_sum = distance_sum
 
         time_per_repetition.append(process_time() - starttime)
         steps_per_repetition.append(num_steps)
@@ -306,7 +301,6 @@ def calculate_wcss(clusters: list[int], clustroids: list[str], points: list[str]
         total_sum += avg_dist
     total_avg = total_sum / len(distances_to_clustroid)
     return total_avg
-    print("WCSS: " + str(total_avg))
 
 
 def main():
@@ -342,6 +336,6 @@ def main():
         start_year += 5
         i += 1
 
+
 # find_optimal_k(1994, 2004)
 main()
-

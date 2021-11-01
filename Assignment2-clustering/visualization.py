@@ -7,6 +7,8 @@ import random
 # Make sure the clustering has already been done (by executing k_means_custom.py) before running this script. Also
 # beware of the directory structure used in this file to read in the clustering results.
 
+# Jente Vandersanden and Ingo Andelhofs, Big Data Analytics 2021 - 2022, Hasselt University.
+
 DIRECTORYPATH = "../data/output/2021-11-01 14:20:09.454679/"
 
 filter_list = ['a', 'for', 'and', 'of', 'the', 'with', 'in', 'to', '-', 'an', 'on', 'by', 'abstract', 'bibliography',
@@ -88,7 +90,6 @@ def main():
             line_data = line.split('§')
 
             cluster_number = line_data[0]
-            clustroid = line_data[1]
             cluster_entries = line_data[2:]
             word_count_dict = count_most_frequent_words_in_cluster(cluster_entries, int(cluster_number))
             result_dict = result_dict | word_count_dict
