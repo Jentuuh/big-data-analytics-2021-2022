@@ -81,6 +81,7 @@ def parse_xml_file():
                         # Clean out HTML code
                         html_cleaned = bleach.clean(parsed_obj[field], tags=[], strip=True)
                         stop_words_cleaned = filter_out_stop_words(html_cleaned)
+                        stop_words_cleaned = filter(lambda x: len(x) > 2, stop_words_cleaned)
                         stop_words_cleaned_str = " ".join(stop_words_cleaned)
                         file_output_str += stop_words_cleaned_str
 
