@@ -58,7 +58,7 @@ def generate_hashed_shingles(words: [str]):
 
 def main():
     posts = parse_dataset_from_file(INPUT_FILE_PATH, SAMPLE_SIZE)
-    similarities = []  # [0] * 1000 ** 2 - 1000
+    similarities = []
 
     for i, post1 in enumerate(posts):
 
