@@ -1,10 +1,11 @@
 # This is needed to start a Spark session from the notebook
 # You may adjust the memory used by the driver program based on your machine's settings
 import os
-
-os.environ['PYSPARK_SUBMIT_ARGS'] = "--conf spark.driver.memory=8g  pyspark-shell"
 from pyspark.sql import SparkSession
-import random
+from pyspark import SparkConf, SparkContext
+from matplotlib import pyplot as plt
+
+os.environ['PYSPARK_SUBMIT_ARGS'] = "--conf spark.driver.memory=8g pyspark-shell"
 
 INPUT_FILE_PATH = '../data/crypto.txt'
 SHINGLE_SIZE = 5
@@ -19,15 +20,17 @@ def init_spark():
         pass
 
     # Create a new spark session (note, the * indicates to use all available CPU cores)
-    spark = SparkSession \
-        .builder \
-        .master("local[*]") \
-        .appName("assignment3-datamanagement") \
-        .getOrCreate()
+    # spark = SparkSession \
+    #     .builder \
+    #     .master("local[*]") \
+    #     .appName("assignment3-datamanagement") \
+    #     .getOrCreate()
 
     # When dealing with RDDs, we work the sparkContext object.
     # See https://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.SparkContext
-    sc = spark.sparkContext
+    conf = (SparkConf()
+            .set("spark.driver.maxResultSize", "2g"))
+    sc = SparkContext(conf=conf)
 
     # We print the sparkcontext. This prints general information about the spark instance we have connected to.
     # In particular, the hyperlink allows us to open the spark UI (useful for seeing what is going on)
@@ -77,16 +80,25 @@ def pair_to_jacc_sim(pair: set):
 def brute_force_spark(sc: SparkSession.sparkContext):
     fileName = '../data/crypto.txt'
     docRDD = sc.textFile(fileName)
-    bodyRDD = docRDD.sample(False, 0.1).map(doc_to_body)
+    bodyRDD = docRDD.sample(False, 0.2).map(doc_to_body)
 
     # Convert each document body into shingles
-    shingleRDD = bodyRDD.map(generate_shingles)
-    # Generate pairs of shingle sets (to later calculate jaccard similarity in next pass)
-    pairRDD = shingleRDD.cartesian(shingleRDD).filter(lambda x: x[1] != x[0])
-    # Calculate Jaccard similarities
-    similarityRDD = pairRDD.map(pair_to_jacc_sim).filter(lambda x: x != 0.0)
+    shingleRDD = bodyRDD.map(generate_hashed_shingles)
 
-    similarityRDD.foreach(lambda x: print(x))
+    # Generate pairs of shingle sets (to later calculate jaccard similarity in next pass)
+    combinedRDD = shingleRDD.cartesian(shingleRDD).filter(lambda x: x[1] != x[0])
+
+    # Calculate Jaccard similarities
+    similarityRDD = combinedRDD.map(pair_to_jacc_sim)
+
+    similarities = similarityRDD.collect()
+    print(len(similarities))
+    # Plot histogram (note that we filtered out the 0.0 similarities to get a better view)
+    num_bins = 50
+    plt.hist(similarities, num_bins, facecolor='blue', alpha=0.5)
+    plt.title("20% random sample of Crypto StackExchange posts (Brute force approach in Spark)")
+    plt.xlabel("Similarities")
+    plt.show()
 
 
 def main():

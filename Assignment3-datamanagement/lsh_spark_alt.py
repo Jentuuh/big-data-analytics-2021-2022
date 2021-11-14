@@ -8,6 +8,7 @@ from pyspark.sql import SparkSession
 import numpy as np
 import sys
 from time import time
+from preprocessing import parser
 
 sys.setrecursionlimit(2 ** 27)
 
@@ -204,13 +205,11 @@ def spark_test(sc: SparkSession.sparkContext):
     bodyRDD = docRDD.sample(False, 1).map(doc_to_body)
     print("Amount documents: ", bodyRDD.count())
     shingleRDD = bodyRDD.map(generate_hashed_shingles_with_id)
-    print(shingleRDD.take(3))
 
     # Convert each document body into shingles
     flatUniqueShingleRDD = bodyRDD.flatMap(generate_hashed_shingles).distinct()
 
     # Calculate amount of unique shingles and documents
-    amount_docs = bodyRDD.count()
     amount_unique_shingles = flatUniqueShingleRDD.count()
 
     # ---------------- MIN HASHING -----------------
@@ -249,6 +248,9 @@ def spark_test(sc: SparkSession.sparkContext):
             similar_candidates.append(key)
     print(the_ultimate_god_dict)
     print("Similar candidates: ", similar_candidates)
+
+    for i, candidate in enumerate(similar_candidates):
+        parser.find_posts_by_ids(list(candidate), '../data/Posts.xml', '../data/output/result_data_management' + str(i) + '.txt')
 
     if RUN_TEST_WITH_JACCARD_SIMILARITY:
         shingles_per_id = shingleRDD.collect()

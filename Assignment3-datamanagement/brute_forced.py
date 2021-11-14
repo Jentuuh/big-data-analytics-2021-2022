@@ -79,7 +79,7 @@ def main():
 
     # Plot histogram (note that we filtered out the 0.0 similarities to get a better view)
     num_bins = 50
-    n, bins, patches = plt.hist(similarities, num_bins, facecolor='blue', alpha=0.5)
+    plt.hist(similarities, num_bins, facecolor='blue', alpha=0.5)
     plt.show()
     return
 

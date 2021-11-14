@@ -12,7 +12,7 @@ nltk.download('punkt')
 
 FILE_TO_PARSE = '../../data/Posts.xml'
 OUT_CRYPTO_EXCH = '../../data/crypto.txt'
-
+OUTPUT_RESULTS = '../../data/output/result_data_management'
 
 # Efficient parsing of large XML files from
 # http://stackoverflow.com/a/9814580/987185
@@ -61,6 +61,24 @@ def filter_out_stop_words(str_to_filter: str):
     return filtered_sentence
 
 
+def find_posts_by_ids(post_ids: [int], input_file_name: str, output_file_name: str):
+    with open(input_file_name, "rb") as xml:
+        # batch generator object
+        row_generator = parse(xml)
+        parsed_rows = batch(row_generator, 1)
+
+        f = open(output_file_name, "w")
+        for row in parsed_rows:
+            parsed_obj = list(row)[0]
+
+            if parsed_obj['Id'] in post_ids:
+                post_body = parsed_obj['Body']
+                post_body = post_body.replace('\n', " ")
+                f.write(post_body + "\n")
+
+        f.close()
+
+
 def parse_xml_file():
     """
     Output file row format: PostID#PostTypeID#Body#OwnerID\n
@@ -95,4 +113,4 @@ def parse_xml_file():
         f.close()
 
 
-parse_xml_file()
+#parse_xml_file()
