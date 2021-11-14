@@ -68,13 +68,17 @@ def find_posts_by_ids(post_ids: [int], input_file_name: str, output_file_name: s
         parsed_rows = batch(row_generator, 1)
 
         f = open(output_file_name, "w")
+        counter = 0
         for row in parsed_rows:
             parsed_obj = list(row)[0]
 
             if parsed_obj['Id'] in post_ids:
+                f.write("Body " + str(counter) + ":\n")
                 post_body = parsed_obj['Body']
                 post_body = post_body.replace('\n', " ")
                 f.write(post_body + "\n")
+                f.write("\n")
+                counter += 1
 
         f.close()
 

@@ -21,6 +21,7 @@ BANDS = 16
 THRESHOLD = 0.4
 AMOUNT_BUCKETS = 100000
 RUN_TEST_WITH_JACCARD_SIMILARITY = False
+OUTPUT_POST_CONTENT = False
 INF = 2 ** 32
 
 
@@ -249,8 +250,9 @@ def spark_test(sc: SparkSession.sparkContext):
     print(the_ultimate_god_dict)
     print("Similar candidates: ", similar_candidates)
 
-    for i, candidate in enumerate(similar_candidates):
-        parser.find_posts_by_ids(list(candidate), '../data/Posts.xml', '../data/output/result_data_management' + str(i) + '.txt')
+    if OUTPUT_POST_CONTENT:
+        for i, candidate in enumerate(similar_candidates):
+            parser.find_posts_by_ids(list(candidate), '../data/Posts.xml', '../data/output/result_data_management' + str(i) + '.txt')
 
     if RUN_TEST_WITH_JACCARD_SIMILARITY:
         shingles_per_id = shingleRDD.collect()
