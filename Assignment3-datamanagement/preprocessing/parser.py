@@ -4,15 +4,22 @@ import six
 import bleach
 import nltk
 from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
 from nltk.tokenize import RegexpTokenizer
+
+# A parser file to parse the StackExchange Posts data set to our custom .txt format. Before you run this script, make
+# sure your directory structure is conform to the I/O files defined in the globals provided below. Also, uncomment the
+# function call `parse_xml_file()` on the bottom of this file. When you are done parsing, recomment this function call
+# to avoid having the lsh_spark_alt.py file complain running this function when importing this file.
+
+# Jente Vandersanden and Ingo Andelhofs, Big Data Analytics 2021 - 2022, Hasselt University.
+
 nltk.download('stopwords')
 nltk.download('punkt')
-
 
 FILE_TO_PARSE = '../../data/Posts.xml'
 OUT_CRYPTO_EXCH = '../../data/crypto.txt'
 OUTPUT_RESULTS = '../../data/output/result_data_management'
+
 
 # Efficient parsing of large XML files from
 # http://stackoverflow.com/a/9814580/987185
@@ -116,5 +123,4 @@ def parse_xml_file():
 
         f.close()
 
-
-#parse_xml_file()
+# parse_xml_file()
