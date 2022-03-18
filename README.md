@@ -1,5 +1,5 @@
-# Big Data Analytics
-UHasselt 2021-2022
+# Big Data Analytics Course Assignments
+Hasselt University, 2021-2022
 
 
 https://github.com/Mazeofthemind/MaxMiner
